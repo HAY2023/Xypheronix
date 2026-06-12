@@ -1,5 +1,5 @@
 import 'dart:async';
-import 'dart:io';
+import 'dart:io' show Platform, File, Directory;
 
 import 'package:flutter/material.dart' hide MenuItem;
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -7,7 +7,9 @@ import 'package:provider/provider.dart';
 import 'package:tray_manager/tray_manager.dart';
 import 'package:window_manager/window_manager.dart';
 import 'package:windows_single_instance/windows_single_instance.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 
+import 'core/platform_env.dart';
 import 'providers/app_state.dart';
 import 'screens/connection_gate.dart';
 import 'screens/dashboard.dart';
@@ -19,16 +21,18 @@ import 'screens/update_center.dart';
 import 'screens/vault_screen.dart';
 import 'services/task_manager.dart';
 import 'services/github_updater_service.dart';
-import 'package:package_info_plus/package_info_plus.dart';
 import 'theme/mars_theme.dart';
 import 'widgets/app_title_bar.dart';
 import 'widgets/auto_lock_wrapper.dart';
 import 'widgets/auto_save_dialog.dart';
 import 'widgets/liquid_background.dart';
+import 'widgets/responsive_scaffold.dart';
 import 'widgets/sidebar.dart';
 
+/// Window narrower than this uses the phone layout (bottom nav, no title bar).
+const double kCompactBreakpoint = 800;
+
 const String _trayIconIcoPath = 'assets/tray/mahfadha_pro_tray.ico';
-const String _trayIconPngPath = 'assets/tray/mahfadha_pro_tray.png';
 
 String _resolveDesktopAssetPath(String relativePath) {
   final normalized = relativePath.replaceAll('/', Platform.pathSeparator);
@@ -46,15 +50,33 @@ String _resolveDesktopAssetPath(String relativePath) {
 
 Future<void> main(List<String> args) async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Desktop-only native shell (window chrome, tray, single-instance lock).
+  // Phones, tablets and web skip this entirely and run the adaptive UI.
+  if (PlatformEnv.isDesktop) {
+    await _initDesktopWindow(args);
+  }
+
+  runApp(
+    ChangeNotifierProvider(
+      create: (_) => AppState(),
+      child: const CipherVaultApp(),
+    ),
+  );
+}
+
+Future<void> _initDesktopWindow(List<String> args) async {
   await windowManager.ensureInitialized();
 
-  await WindowsSingleInstance.ensureSingleInstance(
-    args,
-    'mahfadha_pro_windows_desktop',
-    onSecondWindow: (_) async {
-      await TaskManager().restorePrimaryWindow();
-    },
-  );
+  if (Platform.isWindows) {
+    await WindowsSingleInstance.ensureSingleInstance(
+      args,
+      'mahfadha_pro_windows_desktop',
+      onSecondWindow: (_) async {
+        await TaskManager().restorePrimaryWindow();
+      },
+    );
+  }
 
   const windowOptions = WindowOptions(
     size: Size(1180, 780),
@@ -75,13 +97,6 @@ Future<void> main(List<String> args) async {
     await windowManager.show();
     await windowManager.focus();
   });
-
-  runApp(
-    ChangeNotifierProvider(
-      create: (_) => AppState(),
-      child: const CipherVaultApp(),
-    ),
-  );
 }
 
 class CipherVaultApp extends StatefulWidget {
@@ -98,11 +113,17 @@ class _CipherVaultAppState extends State<CipherVaultApp>
   @override
   void initState() {
     super.initState();
-    _initializeDesktopShell();
+    if (PlatformEnv.isDesktop) {
+      _initializeDesktopShell();
+    }
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       final packageInfo = await PackageInfo.fromPlatform();
+      if (!mounted) return;
       context.read<AppState>().setAppVersion('v${packageInfo.version}');
-      TaskManager().initialize(context);
+      // The serial bridge / tray task manager only makes sense on desktop.
+      if (PlatformEnv.isDesktop) {
+        TaskManager().initialize(context);
+      }
       _checkForUpdates(packageInfo.version);
     });
   }
@@ -112,7 +133,7 @@ class _CipherVaultAppState extends State<CipherVaultApp>
       final updater = GitHubUpdaterService(owner: 'HAY2023');
       final latest = await updater.fetchLatestRelease();
       final latestVer = latest.tagName.replaceAll('v', '');
-      
+
       if (latestVer.compareTo(currentVersion) > 0) {
         if (!mounted) return;
         CipherVaultApp.scaffoldMessengerKey.currentState?.showSnackBar(
@@ -156,9 +177,7 @@ class _CipherVaultAppState extends State<CipherVaultApp>
     );
 
     await trayManager.setIcon(
-      _resolveDesktopAssetPath(
-        Platform.isWindows ? _trayIconIcoPath : _trayIconPngPath,
-      ),
+      _resolveDesktopAssetPath(_trayIconIcoPath),
     );
     await trayManager.setToolTip('Mahfadha Pro');
     await trayManager.setContextMenu(menu);
@@ -193,8 +212,10 @@ class _CipherVaultAppState extends State<CipherVaultApp>
 
   @override
   void dispose() {
-    trayManager.removeListener(this);
-    windowManager.removeListener(this);
+    if (PlatformEnv.isDesktop) {
+      trayManager.removeListener(this);
+      windowManager.removeListener(this);
+    }
     super.dispose();
   }
 
@@ -231,6 +252,8 @@ class _CipherVaultAppState extends State<CipherVaultApp>
   }
 }
 
+/// Plain shell used for full-screen routes (connection gate, pin gate, setup).
+/// The custom title bar is only shown on desktop.
 class _AppShell extends StatelessWidget {
   final Widget child;
 
@@ -244,7 +267,7 @@ class _AppShell extends StatelessWidget {
         children: [
           Column(
             children: [
-              const AppTitleBar(),
+              if (PlatformEnv.supportsWindowChrome) const AppTitleBar(),
               Expanded(child: child),
             ],
           ),
@@ -255,6 +278,9 @@ class _AppShell extends StatelessWidget {
   }
 }
 
+/// Main dashboard shell. Adaptive:
+///  - Wide screens (desktop / tablet landscape): left sidebar + content.
+///  - Narrow screens (phones): content + bottom navigation bar.
 class _DashboardShell extends StatelessWidget {
   const _DashboardShell();
 
@@ -266,30 +292,45 @@ class _DashboardShell extends StatelessWidget {
         children: [
           Column(
             children: [
-              const AppTitleBar(),
+              if (PlatformEnv.supportsWindowChrome) const AppTitleBar(),
               Expanded(
                 child: LiquidBackground(
                   child: Directionality(
                     textDirection: TextDirection.rtl,
-                    child: Row(
-                      children: [
-                        const AppSidebar(),
-                        Expanded(
-                          child: AutoLockWrapper(
-                            timeout: const Duration(seconds: 180),
-                            child: Consumer<AppState>(
-                              builder: (context, state, _) {
-                                return AnimatedSwitcher(
-                                  duration: const Duration(milliseconds: 300),
-                                  switchInCurve: Curves.easeOutCubic,
-                                  switchOutCurve: Curves.easeInCubic,
-                                  child: _buildPageContent(state.currentPage),
-                                );
-                              },
-                            ),
+                    child: LayoutBuilder(
+                      builder: (context, constraints) {
+                        final isWide =
+                            constraints.maxWidth >= kCompactBreakpoint;
+                        final content = AutoLockWrapper(
+                          timeout: const Duration(seconds: 180),
+                          child: Consumer<AppState>(
+                            builder: (context, state, _) {
+                              return AnimatedSwitcher(
+                                duration: const Duration(milliseconds: 300),
+                                switchInCurve: Curves.easeOutCubic,
+                                switchOutCurve: Curves.easeInCubic,
+                                child: _buildPageContent(state.currentPage),
+                              );
+                            },
                           ),
-                        ),
-                      ],
+                        );
+
+                        if (isWide) {
+                          return Row(
+                            children: [
+                              const AppSidebar(),
+                              Expanded(child: content),
+                            ],
+                          );
+                        }
+
+                        return Column(
+                          children: [
+                            Expanded(child: content),
+                            const AppBottomNav(),
+                          ],
+                        );
+                      },
                     ),
                   ),
                 ),
@@ -344,7 +385,7 @@ class _AutoSaveOverlay extends StatelessWidget {
                 state.addVaultAccount(newAccount);
                 state.clearPendingCredential();
                 Navigator.of(context, rootNavigator: true).pop();
-                
+
                 CipherVaultApp.scaffoldMessengerKey.currentState?.showSnackBar(
                   SnackBar(
                     content: Text('تم تشفير وحفظ حساب ${newAccount.name} بنجاح!'),
