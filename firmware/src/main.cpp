@@ -14,6 +14,7 @@
 #include <ESP32Encoder.h>
 #include "cryptoauthlib.h"
 #include <esp_sleep.h>
+#include "ui_icons.h"   // vector-drawn UI icons (no emoji / no glyph fonts)
 
 // ==========================================
 // CONFIGURATION & SECURE PARAMETERS
@@ -145,7 +146,7 @@ void setup() {
     tft.setRotation(1);
     tft.fillScreen(TFT_BLACK);
     
-    // ── Boot Welcome Screen ─────────────────────────
+    // ── Boot Welcome Screen ───────────────────
     drawBootScreen();
     
     // Rotary Encoder
@@ -173,12 +174,13 @@ void setup() {
     initATECC608A();
     lastActivityTime = millis();
 
-    // ── First-Time Setup Check ──────────────────────
+    // ── First-Time Setup Check ──────────────────
     checkFirstTimeSetup();
 }
 
 void drawBootScreen() {
     tft.fillScreen(TFT_BLACK);
+    iconLock(tft, 280, 26, 30, TFT_CYAN);   // brand lock mark
     tft.setTextColor(TFT_CYAN);
     tft.setTextSize(3);
     tft.setCursor(10, 30);
@@ -990,7 +992,7 @@ void drawMenu() {
     tft.setTextSize(2);
     tft.setCursor(0, 15);
 
-    // ── Setup Screens ─────────────────────────────
+    // ── Setup Screens ──────────────────────────────
     if (currentScreen == SCREEN_SETUP_WAITING) {
         tft.setTextColor(TFT_CYAN);
         tft.println("Setup Mode");
@@ -1004,6 +1006,7 @@ void drawMenu() {
         tft.println("Waiting for serial...");
     }
     else if (currentScreen == SCREEN_SETUP_ENROLL) {
+        iconFinger(tft, 250, 40, 50, TFT_CYAN);
         tft.setTextColor(TFT_CYAN);
         tft.println("Fingerprint");
         tft.println("");
@@ -1012,6 +1015,7 @@ void drawMenu() {
         tft.println("on the sensor");
     }
     else if (currentScreen == SCREEN_SETUP_ENROLL_OK) {
+        iconShield(tft, 250, 40, 50, TFT_GREEN);
         tft.setTextColor(TFT_GREEN);
         tft.println("Linked!");
         tft.println("");
@@ -1020,8 +1024,9 @@ void drawMenu() {
         tft.println("Master fingerprint saved.");
         tft.println("Device is now secured.");
     }
-    // ── Verify Identity ───────────────────────────
+    // ── Verify Identity ────────────────────────
     else if (currentScreen == SCREEN_VERIFY_IDENTITY) {
+        iconFinger(tft, 130, 110, 60, TFT_CYAN);
         tft.setTextColor(TFT_CYAN);
         tft.println("Verify Identity");
         tft.println("");
@@ -1029,8 +1034,9 @@ void drawMenu() {
         tft.println("Scan fingerprint");
         tft.println("to continue");
     }
-    // ── Normal Screens ────────────────────────────
+    // ── Normal Screens ─────────────────────────
     else if (currentScreen == SCREEN_LOCKED) {
+        iconLock(tft, 280, 12, 28, TFT_ORANGE);
         tft.setTextColor(TFT_ORANGE);
         tft.println("Mahfadha Pro");
         tft.println("");
@@ -1042,6 +1048,7 @@ void drawMenu() {
             tft.setTextColor(TFT_RED);
             tft.print("Attempts: "); tft.print(failedAttempts); tft.print("/"); tft.println(MAX_FAILURES);
         }
+        iconFinger(tft, 135, 130, 56, TFT_CYAN);
     }
     else if (currentScreen == SCREEN_PIN_ENTRY) {
         tft.setTextColor(TFT_CYAN);
@@ -1055,17 +1062,26 @@ void drawMenu() {
     }
     else if (currentScreen == SCREEN_MAIN) {
         tft.setTextColor(TFT_ORANGE);
+        tft.setCursor(0, 15);
         tft.println("Mahfadha Pro");
-        tft.setTextColor(TFT_WHITE);
-        tft.println("----------------");
-        String items[] = {"Passwords", "Seed Vault", "FIDO2 Key", "Settings"};
+        tft.drawFastHLine(0, 40, 240, TFT_DARKGREY);
+        const char* items[] = {"Passwords", "Seed Vault", "FIDO2 Key", "Settings"};
         for (int i = 0; i < 4; i++) {
-            if (i == selectedIndex) { tft.setTextColor(TFT_GREEN); tft.print("> "); }
-            else { tft.setTextColor(TFT_WHITE); tft.print("  "); }
-            tft.println(items[i]);
+            int ry = 50 + i * 42;
+            uint16_t col = (i == selectedIndex) ? TFT_GREEN : TFT_WHITE;
+            if (i == selectedIndex) tft.drawRoundRect(2, ry - 5, 230, 36, 5, TFT_GREEN);
+            if (i == 0)      iconKey(tft, 10, ry, 26, col);
+            else if (i == 1) iconSeed(tft, 10, ry, 26, col);
+            else if (i == 2) iconShield(tft, 10, ry, 26, col);
+            else             iconGear(tft, 10, ry, 26, col);
+            tft.setTextColor(col);
+            tft.setTextSize(2);
+            tft.setCursor(48, ry + 5);
+            tft.print(items[i]);
         }
     }
     else if (currentScreen == SCREEN_PASSWORDS) {
+        iconKey(tft, 260, 12, 30, TFT_CYAN);
         tft.setTextColor(TFT_CYAN);
         tft.println("Vault Accounts");
         tft.setTextColor(TFT_WHITE);
@@ -1090,6 +1106,7 @@ void drawMenu() {
         }
     }
     else if (currentScreen == SCREEN_SEED_VAULT) {
+        iconSeed(tft, 260, 12, 30, TFT_CYAN);
         tft.setTextColor(TFT_CYAN);
         tft.println("Seed Vault");
         tft.setTextColor(TFT_WHITE);
@@ -1099,6 +1116,7 @@ void drawMenu() {
         tft.println("Click to go back");
     }
     else if (currentScreen == SCREEN_FIDO2) {
+        iconShield(tft, 260, 12, 30, TFT_CYAN);
         tft.setTextColor(TFT_CYAN);
         tft.println("FIDO2 Key");
         tft.setTextColor(TFT_WHITE);
@@ -1108,6 +1126,7 @@ void drawMenu() {
         tft.println("Click to go back");
     }
     else if (currentScreen == SCREEN_SETTINGS) {
+        iconGear(tft, 260, 12, 30, TFT_CYAN);
         tft.setTextColor(TFT_CYAN);
         tft.println("Settings");
         tft.setTextColor(TFT_WHITE);
