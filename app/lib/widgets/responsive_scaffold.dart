@@ -9,9 +9,9 @@ import '../theme/mars_theme.dart';
 ///
 /// The desktop build uses [AppSidebar]; on phones (and any window narrower
 /// than the responsive breakpoint) we swap to this bottom navigation bar so
-/// the same five sections stay reachable with a thumb.
+/// the same sections stay reachable with a thumb.
 ///
-/// الرئيسية | الحسابات | جهات الاتصال | التحديثات | الإعدادات
+/// الرئيسية | الحسابات | جهات الاتصال | الاتصال | التحديثات | الإعدادات
 class AppBottomNav extends StatelessWidget {
   const AppBottomNav({super.key});
 
@@ -19,6 +19,7 @@ class AppBottomNav extends StatelessWidget {
     _NavSpec(SidebarPage.home, Icons.dashboard_rounded, 'الرئيسية'),
     _NavSpec(SidebarPage.accounts, Icons.key_rounded, 'الحسابات'),
     _NavSpec(SidebarPage.phones, Icons.phone_android_rounded, 'جهات الاتصال'),
+    _NavSpec(SidebarPage.connection, Icons.cable_rounded, 'الاتصال'),
     _NavSpec(SidebarPage.updates, Icons.system_update_alt_rounded, 'التحديثات'),
     _NavSpec(SidebarPage.settings, Icons.settings_rounded, 'الإعدادات'),
   ];
