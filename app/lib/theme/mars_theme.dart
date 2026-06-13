@@ -15,15 +15,15 @@ class MarsTheme {
   static const Color cardGlass = Color(0x66000000); // Transparent black for all cards
 
   // ── ألوان النيون ──────────────────────────────────────────────────
-  static const Color cyanNeon = Color(0xFF00FFFF);
+  static const Color cyanNeon = Color(0xFF00FF66);
   static const Color cyan = cyanNeon;
-  static const Color cyanDim = Color(0xFF43A9C7);
-  static const Color cyanGlow = Color(0xFF63DCFF);
-  static const Color accent = Color(0xFF6FA8C0);
-  static const Color borderGlow = Color(0x3350BDE0);
+  static const Color cyanDim = Color(0xFF10B981);
+  static const Color cyanGlow = Color(0xFF6EE7B7);
+  static const Color accent = Color(0xFF34D399);
+  static const Color borderGlow = Color(0x3300FF66);
 
   // ── ألوان الحالة ──────────────────────────────────────────────────
-  static const Color success = Color(0xFF34D399);
+  static const Color success = Color(0xFF10B981);
   static const Color error = Color(0xFFF87171);
   static const Color warning = Color(0xFFFBBF24);
 
@@ -34,7 +34,7 @@ class MarsTheme {
 
   // ── التدرجات ──────────────────────────────────────────────────────
   static const LinearGradient cyanGradient = LinearGradient(
-    colors: [Color(0xFF0B879F), Color(0xFF33B7D8)],
+    colors: [Color(0xFF059669), Color(0xFF00FF66)],
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
   );

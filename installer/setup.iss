@@ -1,8 +1,8 @@
-#define MyAppName "Mahfadha Pro"
+#define MyAppName "Xypheronix"
 #define MyAppVersion "3.1.3"
 #define MyAppPublisher "HAY2023"
 #define MyAppURL "https://github.com/HAY2023/Mahfadha-Pro"
-#define MyAppExeName "MahfadhaPro.exe"
+#define MyAppExeName "Xypheronix.exe"
 
 [Setup]
 AppId={{B8A3D2F1-7E4C-4A9B-8F1D-2C5E6A7B8D9F}
@@ -14,7 +14,7 @@ DefaultDirName={autopf}\{#MyAppName}
 DefaultGroupName={#MyAppName}
 AllowNoIcons=yes
 OutputDir=..\installer-output
-OutputBaseFilename=Mahfadha-Pro-Setup
+OutputBaseFilename=Xypheronix-Setup
 Compression=lzma2/ultra64
 SolidCompression=yes
 WizardStyle=modern
@@ -32,7 +32,7 @@ Source: "vc_redist.x64.exe"; DestDir: "{tmp}"; Flags: deleteafterinstall
 
 ; ── Flutter Application + Bridge ──
 Source: "flutter-release\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
-Source: "mahfadha_bridge.exe"; DestDir: "{app}"; Flags: ignoreversion
+Source: "xypheronix_bridge.exe"; DestDir: "{app}"; Flags: ignoreversion
 
 [Icons]
 Name: "{group}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"

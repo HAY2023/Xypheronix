@@ -74,7 +74,7 @@ class DashboardScreen extends StatelessWidget {
                 child: const Icon(Icons.security, color: MarsTheme.cyanNeon, size: 24),
               ),
               const SizedBox(width: 16),
-              Text('MAHFADHA PRO', style: GoogleFonts.orbitron(
+              Text('XYPHERONIX', style: GoogleFonts.orbitron(
                 color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold, letterSpacing: 2,
               )),
               const Spacer(),

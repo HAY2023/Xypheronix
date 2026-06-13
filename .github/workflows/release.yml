@@ -1,4 +1,4 @@
-name: Build and Release Mahfadha Pro
+name: Build and Release Xypheronix
 
 on:
   push:
@@ -22,6 +22,12 @@ jobs:
         with:
           python-version: '3.12'
 
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
@@ -39,12 +45,12 @@ jobs:
       - name: Build CLI bridge
         run: |
           cd cli-bridge
-          pyinstaller --onefile --name mahfadha_bridge --clean --noconsole mahfadha_bridge.py
+          pyinstaller --onefile --name xypheronix_bridge --clean --noconsole mahfadha_bridge.py
 
-      - name: Generate Windows platform files
+      - name: Generate platform files
         run: |
           cd app
-          flutter create --platforms=windows .
+          flutter create --project-name xypheronix --platforms=windows,android .
 
       - name: Build Windows application
         run: |
@@ -52,6 +58,11 @@ jobs:
           flutter pub get
           flutter pub run flutter_launcher_icons
           flutter build windows --release
+
+      - name: Build Android APK
+        run: |
+          cd app
+          flutter build apk --release
 
       - name: Download VC++ Redistributable
         shell: pwsh
@@ -106,38 +117,42 @@ jobs:
           # ── Copy Flutter output to portable ──
           Copy-Item "$releaseDir\*" "release-assets\portable\" -Recurse -Force
 
-          # ── Rename exe to MahfadhaPro.exe ──
+          # ── Rename exe to Xypheronix.exe ──
           $rawExe = Get-ChildItem "release-assets\portable\*.exe" | Select-Object -First 1
           if (-not $rawExe) {
             Write-Host "ERROR: No application exe found in portable output."
             exit 1
           }
 
-          if ($rawExe.Name -ne "MahfadhaPro.exe") {
-            Rename-Item $rawExe.FullName "MahfadhaPro.exe"
+          if ($rawExe.Name -ne "Xypheronix.exe") {
+            Rename-Item $rawExe.FullName "Xypheronix.exe"
           }
 
           # ── Copy CLI bridge ──
-          Copy-Item "cli-bridge\dist\mahfadha_bridge.exe" "release-assets\portable\" -Force
+          Copy-Item "cli-bridge\dist\xypheronix_bridge.exe" "release-assets\portable\" -Force
 
           # ── Create portable ZIP ──
           Compress-Archive `
             -Path "release-assets\portable\*" `
-            -DestinationPath "release-assets\Mahfadha-Pro-Windows.zip" `
+            -DestinationPath "release-assets\Xypheronix-Windows.zip" `
             -Force
 
           # ── Build installer ──
           New-Item -ItemType Directory -Force "installer\flutter-release" | Out-Null
           Copy-Item "release-assets\portable\*" "installer\flutter-release\" -Recurse -Force
-          Copy-Item "cli-bridge\dist\mahfadha_bridge.exe" "installer\" -Force
+          Copy-Item "cli-bridge\dist\xypheronix_bridge.exe" "installer\" -Force
 
           iscc "installer\setup.iss"
-          Copy-Item "installer-output\Mahfadha-Pro-Setup.exe" "release-assets\" -Force
+          Copy-Item "installer-output\Xypheronix-Setup.exe" "release-assets\" -Force
+
+          # ── Copy Android APK ──
+          Copy-Item "app\build\app\outputs\flutter-apk\app-release.apk" "release-assets\Xypheronix.apk" -Force
 
           # ── SHA-256 Hashes ──
           $filesForHashes = @(
-            "release-assets\Mahfadha-Pro-Setup.exe",
-            "release-assets\Mahfadha-Pro-Windows.zip"
+            "release-assets\Xypheronix-Setup.exe",
+            "release-assets\Xypheronix-Windows.zip",
+            "release-assets\Xypheronix.apk"
           )
 
           $hashMap = @{}
@@ -160,16 +175,22 @@ jobs:
             release_url = $releaseUrl
             assets = @{
               app = @{
-                name = "Mahfadha-Pro-Setup.exe"
-                download_url = "$($env:GITHUB_SERVER_URL)/$($env:GITHUB_REPOSITORY)/releases/download/$releaseTag/Mahfadha-Pro-Setup.exe"
-                sha256 = $hashMap["Mahfadha-Pro-Setup.exe"]
-                size = (Get-Item "release-assets\Mahfadha-Pro-Setup.exe").Length
+                name = "Xypheronix-Setup.exe"
+                download_url = "$($env:GITHUB_SERVER_URL)/$($env:GITHUB_REPOSITORY)/releases/download/$releaseTag/Xypheronix-Setup.exe"
+                sha256 = $hashMap["Xypheronix-Setup.exe"]
+                size = (Get-Item "release-assets\Xypheronix-Setup.exe").Length
               }
               portable = @{
-                name = "Mahfadha-Pro-Windows.zip"
-                download_url = "$($env:GITHUB_SERVER_URL)/$($env:GITHUB_REPOSITORY)/releases/download/$releaseTag/Mahfadha-Pro-Windows.zip"
-                sha256 = $hashMap["Mahfadha-Pro-Windows.zip"]
-                size = (Get-Item "release-assets\Mahfadha-Pro-Windows.zip").Length
+                name = "Xypheronix-Windows.zip"
+                download_url = "$($env:GITHUB_SERVER_URL)/$($env:GITHUB_REPOSITORY)/releases/download/$releaseTag/Xypheronix-Windows.zip"
+                sha256 = $hashMap["Xypheronix-Windows.zip"]
+                size = (Get-Item "release-assets\Xypheronix-Windows.zip").Length
+              }
+              android = @{
+                name = "Xypheronix.apk"
+                download_url = "$($env:GITHUB_SERVER_URL)/$($env:GITHUB_REPOSITORY)/releases/download/$releaseTag/Xypheronix.apk"
+                sha256 = $hashMap["Xypheronix.apk"]
+                size = (Get-Item "release-assets\Xypheronix.apk").Length
               }
             }
           }
@@ -178,11 +199,12 @@ jobs:
 
           # ── Release Notes ──
           $releaseNotes = @()
-          $releaseNotes += "## Mahfadha Pro $releaseTag"
+          $releaseNotes += "## Xypheronix $releaseTag"
           $releaseNotes += ""
           $releaseNotes += "### Release Assets"
-          $releaseNotes += "- **Mahfadha-Pro-Setup.exe** — Windows installer (includes VC++ Runtime)"
-          $releaseNotes += "- **Mahfadha-Pro-Windows.zip** — Portable version"
+          $releaseNotes += "- **Xypheronix-Setup.exe** — Windows installer (includes VC++ Runtime)"
+          $releaseNotes += "- **Xypheronix-Windows.zip** — Portable version"
+          $releaseNotes += "- **Xypheronix.apk** — Android application package"
           $releaseNotes += "- **latest.json** — Update manifest for auto-updater"
           $releaseNotes += ""
           $releaseNotes += "### SHA-256 Checksums"
@@ -193,10 +215,11 @@ jobs:
       - name: Upload release artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: Mahfadha-Pro-Release
+          name: Xypheronix-Release
           path: |
-            release-assets/Mahfadha-Pro-Setup.exe
-            release-assets/Mahfadha-Pro-Windows.zip
+            release-assets/Xypheronix-Setup.exe
+            release-assets/Xypheronix-Windows.zip
+            release-assets/Xypheronix.apk
             release-assets/latest.json
             release-assets/SHA256SUMS.txt
 
@@ -205,8 +228,9 @@ jobs:
         if: startsWith(github.ref, 'refs/tags/')
         with:
           files: |
-            release-assets/Mahfadha-Pro-Setup.exe
-            release-assets/Mahfadha-Pro-Windows.zip
+            release-assets/Xypheronix-Setup.exe
+            release-assets/Xypheronix-Windows.zip
+            release-assets/Xypheronix.apk
             release-assets/latest.json
             release-assets/SHA256SUMS.txt
           body_path: release-assets/release-notes.md

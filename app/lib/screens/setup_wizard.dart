@@ -133,7 +133,7 @@ class _SetupWizardState extends State<SetupWizard> with TickerProviderStateMixin
         children: [
           const Icon(Icons.memory_rounded, color: MarsTheme.cyan, size: 20),
           const SizedBox(width: 8),
-          Text('MAHFADHA PRO', style: GoogleFonts.inter(
+          Text('XYPHERONIX', style: GoogleFonts.inter(
             color: MarsTheme.cyan, fontSize: 13, fontWeight: FontWeight.w700, letterSpacing: 2,
           )),
           const Spacer(),
@@ -208,7 +208,7 @@ class _SetupWizardState extends State<SetupWizard> with TickerProviderStateMixin
           ),
         ),
         const SizedBox(height: 32),
-        Text('مرحباً بك في Mahfadha Pro', style: GoogleFonts.cairo(
+        Text('مرحباً بك في Xypheronix', style: GoogleFonts.cairo(
           color: MarsTheme.textPrimary, fontSize: 28, fontWeight: FontWeight.w700, letterSpacing: -0.5,
         )),
         const SizedBox(height: 8),

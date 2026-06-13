@@ -281,7 +281,7 @@ class _UpdateCenterScreenState extends State<UpdateCenterScreen>
         Text('مركز التحديثات', style: GoogleFonts.cairo(
           color: MarsTheme.textPrimary, fontSize: 24, fontWeight: FontWeight.w700)),
         const SizedBox(height: 4),
-        Text('تحديث التطبيق والمتحكم عبر GitHub Releases مع التحقق من SHA-256.',
+        Text('تحديث التطبيق والمتحكم عبر  سيرفر شركة Xypheronixمع التحقق من SHA-256.',
           style: GoogleFonts.cairo(color: MarsTheme.textMuted, fontSize: 12.5)),
       ])),
       const SizedBox(width: 12),
@@ -359,7 +359,7 @@ class _UpdateCenterScreenState extends State<UpdateCenterScreen>
           _iconBox(_statusColor, _statusIcon),
           const SizedBox(width: 14),
           Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Text('تحديث تطبيق Mahfadha Pro', style: GoogleFonts.cairo(
+            Text('تحديث تطبيق Xypheronix', style: GoogleFonts.cairo(
               color: MarsTheme.textPrimary, fontSize: 18, fontWeight: FontWeight.w700)),
             Text('يتضمن VC++ Runtime لضمان التشغيل على جميع الأجهزة.',
               style: GoogleFonts.cairo(color: MarsTheme.textMuted, fontSize: 11.5)),

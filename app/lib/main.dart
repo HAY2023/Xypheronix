@@ -95,11 +95,11 @@ Future<void> _initDesktopWindow(List<String> args) async {
     backgroundColor: Colors.transparent,
     skipTaskbar: false,
     titleBarStyle: TitleBarStyle.hidden,
-    title: 'Mahfadha Pro',
+    title: 'Xypheronix',
   );
 
   await windowManager.waitUntilReadyToShow(windowOptions, () async {
-    await windowManager.setTitle('Mahfadha Pro');
+    await windowManager.setTitle('Xypheronix');
     try {
       await windowManager.setIcon(_resolveDesktopAssetPath(_trayIconIcoPath));
     } catch (_) {}
@@ -180,7 +180,7 @@ class _CipherVaultAppState extends State<CipherVaultApp>
   Future<void> _configureTray() async {
     final menu = Menu(
       items: [
-        MenuItem(key: 'open_app', label: 'فتح Mahfadha Pro'),
+        MenuItem(key: 'open_app', label: 'فتح Xypheronix'),
         MenuItem.separator(),
         MenuItem(key: 'quit_app', label: 'إغلاق نهائي'),
       ],
@@ -189,7 +189,7 @@ class _CipherVaultAppState extends State<CipherVaultApp>
     await trayManager.setIcon(
       _resolveDesktopAssetPath(_trayIconIcoPath),
     );
-    await trayManager.setToolTip('Mahfadha Pro');
+    await trayManager.setToolTip('Xypheronix');
     await trayManager.setContextMenu(menu);
   }
 
@@ -234,7 +234,7 @@ class _CipherVaultAppState extends State<CipherVaultApp>
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       scaffoldMessengerKey: CipherVaultApp.scaffoldMessengerKey,
-      title: 'Mahfadha Pro',
+      title: 'Xypheronix',
       theme: MarsTheme.darkTheme,
       localizationsDelegates: const [
         GlobalMaterialLocalizations.delegate,
