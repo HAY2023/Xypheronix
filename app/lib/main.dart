@@ -10,8 +10,12 @@ import 'package:windows_single_instance/windows_single_instance.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 
 import 'core/platform_env.dart';
+import 'core/transport/ble_transport.dart';
+import 'core/transport/connection_manager.dart';
+import 'core/transport/usb_transport.dart';
 import 'providers/app_state.dart';
 import 'screens/connection_gate.dart';
+import 'screens/connection_hub_screen.dart';
 import 'screens/dashboard.dart';
 import 'screens/phone_vault_screen.dart';
 import 'screens/pin_gate.dart';
@@ -58,8 +62,14 @@ Future<void> main(List<String> args) async {
   }
 
   runApp(
-    ChangeNotifierProvider(
-      create: (_) => AppState(),
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => AppState()),
+        ChangeNotifierProvider(
+          create: (_) =>
+              ConnectionManager([UsbTransport(), BleTransport()])..startAll(),
+        ),
+      ],
       child: const CipherVaultApp(),
     ),
   );
@@ -351,6 +361,8 @@ class _DashboardShell extends StatelessWidget {
         return const VaultScreen(key: ValueKey('accounts'));
       case SidebarPage.phones:
         return const PhoneVaultScreen(key: ValueKey('phones'));
+      case SidebarPage.connection:
+        return const ConnectionHubScreen(key: ValueKey('connection'));
       case SidebarPage.updates:
         return const UpdateCenterScreen(key: ValueKey('updates'));
       case SidebarPage.settings:
