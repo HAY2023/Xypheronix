@@ -1,0 +1,7 @@
+flutter_icons:
+  image_path: "../assets/marketing/ciphervault_app_icon.png"
+  windows:
+    generate: true
+    image_path: "../assets/marketing/ciphervault_app_icon.png"
+    icon_size: 48
+  android: true
