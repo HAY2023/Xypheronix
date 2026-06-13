@@ -8,7 +8,7 @@ import '../theme/mars_theme.dart';
 
 /// ══════════════════════════════════════════════════════════════════════
 ///  Sidebar Navigation — RTL Arabic with Cairo font
-///  الرئيسية | الحسابات | أرقام الهاتف | مركز التحديثات | الإعدادات
+///  الرئيسية | الحسابات | أرقام الهاتف | ركن الاتصال | مركز التحديثات | الإعدادات
 /// ══════════════════════════════════════════════════════════════════════
 class AppSidebar extends StatelessWidget {
   const AppSidebar({super.key});
@@ -28,6 +28,11 @@ class AppSidebar extends StatelessWidget {
       page: SidebarPage.phones,
       icon: Icons.phone_android_rounded,
       label: 'جهات الاتصال الآمنة',
+    ),
+    _SidebarItem(
+      page: SidebarPage.connection,
+      icon: Icons.cable_rounded,
+      label: 'ركن الاتصال',
     ),
     _SidebarItem(
       page: SidebarPage.updates,
