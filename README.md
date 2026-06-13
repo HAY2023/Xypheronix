@@ -2,6 +2,8 @@
 
 # XYPHERONIX
 
+<img src="ChatGPT%20Image%20Jun%206,%202026,%2006_00_42%20AM.png" width="500" alt="XYPHERONIX Logo">
+
 ### Zero-Trust, Air-Gapped Hardware Security Platform
 
 ![Platform](https://img.shields.io/badge/Platform-XYPHERONIX-00c853?style=for-the-badge)
