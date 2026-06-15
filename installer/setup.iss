@@ -1,5 +1,5 @@
 #define MyAppName "Xypheronix"
-#define MyAppVersion "3.1.6"
+#define MyAppVersion "3.1.7"
 #define MyAppPublisher "HAY2023"
 #define MyAppURL "https://github.com/HAY2023/Mahfadha-Pro"
 #define MyAppExeName "Xypheronix.exe"
