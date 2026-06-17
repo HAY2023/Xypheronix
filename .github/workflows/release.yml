@@ -52,6 +52,52 @@ jobs:
           cd app
           flutter create --project-name xypheronix --platforms=windows,android .
 
+      - name: Patch Android NDK version
+        shell: pwsh
+        run: |
+          $buildGradle = "app\android\app\build.gradle.kts"
+          if (Test-Path $buildGradle) {
+            $content = Get-Content $buildGradle -Raw
+            # Replace the default ndkVersion with the one required by plugins
+            if ($content -match 'ndkVersion\s*=') {
+              $content = $content -replace 'ndkVersion\s*=\s*"[^"]*"', 'ndkVersion = "27.0.12077973"'
+            } else {
+              # Insert ndkVersion into the android block
+              $content = $content -replace '(android\s*\{)', "`$1`n    ndkVersion = `"27.0.12077973`""
+            }
+            Set-Content $buildGradle -Value $content -NoNewline
+            Write-Host "Patched NDK version to 27.0.12077973 in $buildGradle"
+            Write-Host "--- Patched content ---"
+            Get-Content $buildGradle | Select-Object -First 30
+          } else {
+            Write-Host "WARNING: $buildGradle not found, skipping NDK patch"
+          }
+
+      - name: Clean Gradle caches
+        shell: pwsh
+        run: |
+          # Remove Gradle temp/cache to prevent "Problems reading data from Binary store" errors
+          $gradleHome = "$env:USERPROFILE\.gradle"
+          if (Test-Path "$gradleHome\.tmp") {
+            Remove-Item "$gradleHome\.tmp" -Recurse -Force -ErrorAction SilentlyContinue
+            Write-Host "Cleaned Gradle .tmp directory"
+          }
+          if (Test-Path "$gradleHome\caches") {
+            Remove-Item "$gradleHome\caches" -Recurse -Force -ErrorAction SilentlyContinue
+            Write-Host "Cleaned Gradle caches directory"
+          }
+          # Set Gradle properties for CI stability
+          $propsDir = "$gradleHome"
+          if (-not (Test-Path $propsDir)) { New-Item -ItemType Directory -Force $propsDir | Out-Null }
+          $propsContent = @"
+org.gradle.daemon=false
+org.gradle.jvmargs=-Xmx4g -XX:+HeapDumpOnOutOfMemoryError
+org.gradle.parallel=true
+org.gradle.caching=false
+"@
+          Set-Content "$propsDir\gradle.properties" -Value $propsContent
+          Write-Host "Set Gradle properties for CI stability"
+
       - name: Build Windows application
         run: |
           cd app
