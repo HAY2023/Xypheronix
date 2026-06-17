@@ -89,13 +89,13 @@ jobs:
           # Set Gradle properties for CI stability
           $propsDir = "$gradleHome"
           if (-not (Test-Path $propsDir)) { New-Item -ItemType Directory -Force $propsDir | Out-Null }
-          $propsContent = @"
-org.gradle.daemon=false
-org.gradle.jvmargs=-Xmx4g -XX:+HeapDumpOnOutOfMemoryError
-org.gradle.parallel=true
-org.gradle.caching=false
-"@
-          Set-Content "$propsDir\gradle.properties" -Value $propsContent
+          $lines = @(
+            "org.gradle.daemon=false",
+            "org.gradle.jvmargs=-Xmx4g -XX:+HeapDumpOnOutOfMemoryError",
+            "org.gradle.parallel=true",
+            "org.gradle.caching=false"
+          )
+          $lines -join "`n" | Set-Content "$propsDir\gradle.properties" -NoNewline
           Write-Host "Set Gradle properties for CI stability"
 
       - name: Build Windows application
